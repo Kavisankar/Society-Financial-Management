@@ -10,6 +10,7 @@ export default class MaintenanceScreen extends Component {
             isLoading: true,
             error: null,
             events: {},
+            treasury: null,
             addEventModalVisible: false
         };
     }
@@ -17,6 +18,7 @@ export default class MaintenanceScreen extends Component {
     static contextType = rootContext;
 
     async _fetchEvents() {
+        this._fetchTreasury();
         try {
             const res = await fetch('http://localhost:8080/events', {
                 method: 'GET',
@@ -30,6 +32,26 @@ export default class MaintenanceScreen extends Component {
             }
             const resJson = await res.json();
             this.setState({ events: resJson, isLoading: false });
+        }
+        catch(err) {
+            this.setState({error: err});
+        }
+    }
+
+    async _fetchTreasury() {
+        try {
+            const res = await fetch('http://localhost:8080/treasury', {
+                method: 'GET',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                }
+            }); 
+            if (res.status !== 200 && res.status !== 201) {
+                throw new Error('Failed!');
+            }
+            const resJson = await res.json();
+            this.setState({ treasury: resJson });
         }
         catch(err) {
             this.setState({error: err});
@@ -75,6 +97,11 @@ export default class MaintenanceScreen extends Component {
                             </div>
                         ) : (<></>)
                     }
+                    <div className="d-flex justify-content-center" >
+                        <span className="d-flex">Amount in treasury : {this.state.treasury.amountHaving}</span>
+                        <span className="d-flex" style={{"width": "2rem"}}></span>
+                        <span className="d-flex">Amount needed : {this.state.treasury.amountNeeded}</span>
+                    </div>
                     <section className="p-3 pb-0 text-myc">
                         <table className="table">
                             <thead className="bg-myc text-white text-center">
